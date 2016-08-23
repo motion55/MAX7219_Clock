@@ -2,7 +2,6 @@
 #include <Time.h>
 #include <TimeLib.h>
 
-#include <avr/pgmspace.h>
 #include <LedControl.h>
 
 const int numDevices = 4;      // number of MAX7219s used

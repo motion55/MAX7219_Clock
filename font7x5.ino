@@ -1,6 +1,10 @@
 
 #include <avr/pgmspace.h>
 
+#ifndef PROGMEM
+#define PROGMEM
+#endif
+
 const unsigned char font7x5[] PROGMEM = {
 	//   offset = 0
 	0b00000000,
@@ -675,12 +679,20 @@ char LoadColumnBuffer(char ascii)
 	char kern = 0;
 	if (ascii >= 0x20 && ascii <= 0x7f)
 	{
+#ifndef __PGMSPACE_H_
+		kern = font7x5_kern[ascii - 0x20];
+		int offset = font7x5_offset[ascii - 0x20)];
+#else
 		kern = pgm_read_byte_near(font7x5_kern + (ascii-0x20));
 		int offset = pgm_read_word_near(font7x5_offset + (ascii-0x20));
+#endif
 		for (int i = 0; i < kern; i++)
 		{
 			if (LoadPos >= ColumnBufferLen) return i;
+#ifndef __PGMSPACE_H_
+#else
 			ColumnBuffer[LoadPos] = pgm_read_byte_near(font7x5 + offset);
+#endif
 			LoadPos++; offset++;
 		}
 	}
