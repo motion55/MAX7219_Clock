@@ -1,8 +1,8 @@
 
+#ifdef ESP_H
+#include <pgmspace.h>
+#else
 #include <avr/pgmspace.h>
-
-#ifndef PROGMEM
-#define PROGMEM
 #endif
 
 const unsigned char font7x5[] PROGMEM = {
@@ -679,20 +679,13 @@ char LoadColumnBuffer(char ascii)
 	char kern = 0;
 	if (ascii >= 0x20 && ascii <= 0x7f)
 	{
-#ifndef __PGMSPACE_H_
-		kern = font7x5_kern[ascii - 0x20];
-		int offset = font7x5_offset[ascii - 0x20)];
-#else
 		kern = pgm_read_byte_near(font7x5_kern + (ascii-0x20));
 		int offset = pgm_read_word_near(font7x5_offset + (ascii-0x20));
-#endif
+
 		for (int i = 0; i < kern; i++)
 		{
 			if (LoadPos >= ColumnBufferLen) return i;
-#ifndef __PGMSPACE_H_
-#else
 			ColumnBuffer[LoadPos] = pgm_read_byte_near(font7x5 + offset);
-#endif
 			LoadPos++; offset++;
 		}
 	}
@@ -714,43 +707,34 @@ void LoadMessage(unsigned char * message)
 	}
 }
 
-unsigned char DusplayBuffer[8*numDevices];
-
-void LoadDisplayBuffer()
+void LoadDisplayBuffer(void)
 {
-	int Pos = ScrollPos;
+	unsigned char DisplayBuffer[8];
+
+	int Pos = ScrollPos++;
+	if (ScrollPos >= ColumnBufferLen) ScrollPos = 0;
+
 	for (int device = numDevices - 1; device >= 0; device--)
 	{
-		int offset = device * 8;
 		for (int col = 0; col < 8; col++)
 		{
 			if (Pos >= ColumnBufferLen)	Pos = 0;
 			unsigned char dat = ColumnBuffer[Pos++];
 			for (int row = 0; row < 8; row++)
 			{
-				DusplayBuffer[row + offset] <<= 1;
+				DisplayBuffer[row] <<= 1;
 				if (dat & 1)
 				{
-					DusplayBuffer[row + offset] += 1;
+					DisplayBuffer[row] += 1;
 				}
 				dat >>= 1;
 			}
 		}
-	}
-	ScrollPos++;
-	if (ScrollPos >= ColumnBufferLen) ScrollPos = 0;
-}
 
-// Send DisplayBuffer to LED matrix
-void SendDisplayBuffer() 
-{
-	for (int device = numDevices - 1; device >= 0; device--)
-	{
-		int offset = device * 8;
 		for (int row = 0; row < 8; row++)
 		{
-			byte x = DusplayBuffer[row + offset];
-			lc.setRow(device, row, x);				// Send row to relevent MAX7219 chip
+			byte x = DisplayBuffer[row];
+			lc.setRow(device, row, x);	// Send row to relevent MAX7219 chip
 		}
 	}
 }
