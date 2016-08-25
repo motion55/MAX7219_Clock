@@ -1,9 +1,13 @@
 
 #ifdef ESP_H
-#include <pgmspace.h>
+#undef PROGMEM
+#ifndef PROGMEM
+#define PROGMEM
+#endif
 #else
 #include <avr/pgmspace.h>
 #endif
+
 
 const unsigned char font7x5[] PROGMEM = {
 	//   offset = 0
@@ -679,13 +683,22 @@ char LoadColumnBuffer(char ascii)
 	char kern = 0;
 	if (ascii >= 0x20 && ascii <= 0x7f)
 	{
+#ifdef ESP_H
+		kern = font7x5_kern[ascii - 0x20];
+		int offset = font7x5_offset[ascii - 0x20];
+#else
 		kern = pgm_read_byte_near(font7x5_kern + (ascii-0x20));
 		int offset = pgm_read_word_near(font7x5_offset + (ascii-0x20));
+#endif
 
 		for (int i = 0; i < kern; i++)
 		{
 			if (LoadPos >= ColumnBufferLen) return i;
+#ifdef ESP_H
+			ColumnBuffer[LoadPos] = font7x5[offset];
+#else
 			ColumnBuffer[LoadPos] = pgm_read_byte_near(font7x5 + offset);
+#endif
 			LoadPos++; offset++;
 		}
 	}
