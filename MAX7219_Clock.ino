@@ -196,7 +196,7 @@ void loop() {
 	UpdateTime();
 	int Len = LoadMessage(scrollText);
 	LoadDisplayBuffer(Len);
-	delay(100);
+	my_delay_ms(100);
 }
 
 void UpdateTime(void)
@@ -238,6 +238,7 @@ void UpdateTime(void)
 }
 
 const int timeZone = 8 * SECS_PER_HOUR;     // PHT
+int packet_delay = 0;
 
 time_t getNtpTime()
 {
@@ -247,26 +248,41 @@ time_t getNtpTime()
 	Serial.println("Transmit NTP Request");
 	WiFi.hostByName(ntpServerName, timeServerIP);
 	sendNTPpacket(timeServerIP); // send an NTP packet to a time server
-								 // wait to see if a reply is available
+	packet_delay = 1500;		 // wait to see if a reply is available
+
+	return 0;
+}
+
+void my_delay_ms(int msec)
+{
+	uint32_t delay_val = msec;
 	uint32_t endWait = millis();
 	uint32_t beginWait = endWait;
-	while (endWait - beginWait < 1500) {
-		int size = udp.parsePacket();
-		if (size >= NTP_PACKET_SIZE) {
-			Serial.println("Receive NTP Response");
-			udp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
-			unsigned long secsSince1900;
-			// convert four bytes starting at location 40 to a long integer
-			secsSince1900 = (unsigned long)packetBuffer[40] << 24;
-			secsSince1900 |= (unsigned long)packetBuffer[41] << 16;
-			secsSince1900 |= (unsigned long)packetBuffer[42] << 8;
-			secsSince1900 |= (unsigned long)packetBuffer[43];
-			return secsSince1900 - 2208988800UL + timeZone + ((endWait - beginWait)/1000);
+	while (endWait - beginWait < delay_val) 
+	{
+		if (packet_delay > 0)
+		{
+			int size = udp.parsePacket();
+			if (size >= NTP_PACKET_SIZE)
+			{
+				Serial.println("Receive NTP Response");
+				udp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
+				unsigned long secsSince1900;
+				// convert four bytes starting at location 40 to a long integer
+				secsSince1900 = (unsigned long)packetBuffer[40] << 24;
+				secsSince1900 |= (unsigned long)packetBuffer[41] << 16;
+				secsSince1900 |= (unsigned long)packetBuffer[42] << 8;
+				secsSince1900 |= (unsigned long)packetBuffer[43];
+
+				time_t tm = secsSince1900 - 2208988800UL + timeZone;
+				setTime(tm);
+				packet_delay = 0;
+			}
 		}
 		endWait = millis();
 	}
-	Serial.println("No NTP Response :-(");
-	return 0; // return 0 if unable to get the time
+	if (packet_delay > 0) 
+		packet_delay -= delay_val;
 }
 
 
