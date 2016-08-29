@@ -664,10 +664,9 @@ const int font7x5_offset[] PROGMEM = {
 	487,493,499,505,509,511,515,521,
 };
 
-const int ColumnBufferLen = 60;
-unsigned char ColumnBuffer[ColumnBufferLen];
-int ScrollPos = 0; 
 int LoadPos = 0;
+const int ColumnBufferLen = 64;
+unsigned char ColumnBuffer[ColumnBufferLen];
 
 void ResetColumnBuffer()
 {
@@ -705,7 +704,7 @@ char LoadColumnBuffer(char ascii)
 	return kern;
 }
 
-void LoadMessage(unsigned char * message)
+int LoadMessage(unsigned char * message)
 {
 	ResetColumnBuffer();
 	for (int counter = 0; ; counter++)
@@ -718,20 +717,28 @@ void LoadMessage(unsigned char * message)
 		}
 		else break;
 	}
+	return LoadPos;
 }
 
-void LoadDisplayBuffer(void)
+int ScrollPos;
+
+void ResetScrollPos(void)
+{
+	ScrollPos = 0;
+}
+
+int LoadDisplayBuffer(int BufferLen)
 {
 	unsigned char DisplayBuffer[8];
 
+	if (ScrollPos >= BufferLen) ScrollPos = 0;
 	int Pos = ScrollPos++;
-	if (ScrollPos >= ColumnBufferLen) ScrollPos = 0;
 
 	for (int device = numDevices - 1; device >= 0; device--)
 	{
 		for (int col = 0; col < 8; col++)
 		{
-			if (Pos >= ColumnBufferLen)	Pos = 0;
+			if (Pos >= BufferLen) Pos = 0;
 			unsigned char dat = ColumnBuffer[Pos++];
 			for (int row = 0; row < 8; row++)
 			{
@@ -750,4 +757,6 @@ void LoadDisplayBuffer(void)
 			lc.setRow(device, row, x);	// Send row to relevent MAX7219 chip
 		}
 	}
+
+	return Pos;
 }

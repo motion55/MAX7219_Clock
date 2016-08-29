@@ -5,7 +5,7 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
-char ssid[] = "BST2";  //  your network SSID (name)
+char ssid[] = "BST";  //  your network SSID (name)
 char pass[] = "";       // your network password
 
 unsigned int localPort = 2390;      // local port to listen for UDP packets
@@ -150,8 +150,13 @@ const int SPI_CS = 15;
 LedControl lc = LedControl(SPI_MOSI, SPI_CLK, SPI_CS, numDevices);
 
 unsigned char scrollText[] =
-{"00:00:00am\0"};
-//01234567890
+{ "00:00:00am \0" };
+// 01234567890
+
+void UpdateTime(void);
+int LoadMessage(unsigned char * message);
+void ResetScrollPos(void);
+int LoadDisplayBuffer(int BufferLen);
 
 void setup() {
 	// put your setup code here, to run once:
@@ -163,15 +168,17 @@ void setup() {
 	}
 	setTime(12, 59, 0, 23, 7, 2016);
 
-	Serial.begin(115200);
-	Serial.println();
-	Serial.println();
-	while (WiFi.status() != WL_CONNECTED) {
-		delay(500);
-		Serial.print(".");
-	}
-	Serial.println("");
+	unsigned char ConnectStr[] = { "Connecting.\0" };
 
+	ResetScrollPos();
+	int Len = LoadMessage(ConnectStr);
+	while (WiFi.status() != WL_CONNECTED) {
+		LoadDisplayBuffer(Len);
+		delay(100);
+	}
+	ResetScrollPos();
+
+	Serial.begin(115200);
 	Serial.println("WiFi connected");
 	Serial.println("IP address: ");
 	Serial.println(WiFi.localIP());
@@ -184,15 +191,11 @@ void setup() {
 	setSyncProvider(getNtpTime);
 }
 
-void UpdateTime(void);
-void LoadMessage(unsigned char * message);
-void LoadDisplayBuffer(void);
-
 void loop() {
 	// put your main code here, to run repeatedly:
 	UpdateTime();
-	LoadMessage(scrollText);
-	LoadDisplayBuffer();
+	int Len = LoadMessage(scrollText);
+	LoadDisplayBuffer(Len);
 	delay(100);
 }
 
@@ -234,7 +237,7 @@ void UpdateTime(void)
 	}
 }
 
-const int timeZone = 8;     // PHT
+const int timeZone = 8 * SECS_PER_HOUR;     // PHT
 
 time_t getNtpTime()
 {
@@ -245,8 +248,9 @@ time_t getNtpTime()
 	WiFi.hostByName(ntpServerName, timeServerIP);
 	sendNTPpacket(timeServerIP); // send an NTP packet to a time server
 								 // wait to see if a reply is available
-	uint32_t beginWait = millis();
-	while (millis() - beginWait < 1500) {
+	uint32_t endWait = millis();
+	uint32_t beginWait = endWait;
+	while (endWait - beginWait < 1500) {
 		int size = udp.parsePacket();
 		if (size >= NTP_PACKET_SIZE) {
 			Serial.println("Receive NTP Response");
@@ -257,8 +261,9 @@ time_t getNtpTime()
 			secsSince1900 |= (unsigned long)packetBuffer[41] << 16;
 			secsSince1900 |= (unsigned long)packetBuffer[42] << 8;
 			secsSince1900 |= (unsigned long)packetBuffer[43];
-			return secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR;
+			return secsSince1900 - 2208988800UL + timeZone + ((endWait - beginWait)/1000);
 		}
+		endWait = millis();
 	}
 	Serial.println("No NTP Response :-(");
 	return 0; // return 0 if unable to get the time
