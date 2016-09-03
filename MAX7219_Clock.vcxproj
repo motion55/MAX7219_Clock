@@ -82,7 +82,16 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="fs.h" />
+    <ClInclude Include="fsdata.h" />
+    <ClInclude Include="fsdata_custom.h" />
+    <ClInclude Include="httpd.h" />
+    <ClInclude Include="httpd_structs.h" />
     <ClInclude Include="__vm\.MAX7219_Clock.vsarduino.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="fs.c" />
+    <ClCompile Include="httpd.c" />
   </ItemGroup>
   <PropertyGroup>
     <DebuggerFlavor>VisualMicroDebugger</DebuggerFlavor>

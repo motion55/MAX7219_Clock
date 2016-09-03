@@ -1,4 +1,8 @@
 
+extern "C" {
+#include "httpd.h"
+}
+
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
@@ -35,6 +39,7 @@ void UpdateTime(void);
 int LoadMessage(unsigned char * message);
 void ResetScrollPos(void);
 int LoadDisplayBuffer(int BufferLen);
+void sendNTPpacket(IPAddress& address);
 
 void setup() {
 	// put your setup code here, to run once:
@@ -53,6 +58,8 @@ void setup() {
 		delay(100);
 	}
 	ResetScrollPos();
+
+	httpd_init();
 
 	Serial.begin(115200);
 	Serial.println("WiFi connected");
@@ -163,7 +170,7 @@ void my_delay_ms(int msec)
 
 
 // send an NTP request to the time server at the given address
-unsigned long sendNTPpacket(IPAddress& address)
+void sendNTPpacket(IPAddress& address)
 {
 	Serial.println("sending NTP packet...");
 	// set all bytes in the buffer to 0
