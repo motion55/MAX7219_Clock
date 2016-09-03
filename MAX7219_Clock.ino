@@ -2,9 +2,6 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
-#include <ESP8266WiFi.h>
-#include <WiFiUdp.h>
-
 #include <Time.h>
 #include <TimeLib.h>
 
@@ -46,6 +43,8 @@ void setup() {
 	setTime(12, 59, 0, 23, 7, 2016);
 
 	unsigned char ConnectStr[] = { "Connecting.\0" };
+
+	WiFi.begin(ssid, pass);
 
 	ResetScrollPos();
 	int Len = LoadMessage(ConnectStr);
