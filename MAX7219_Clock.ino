@@ -15,6 +15,7 @@ char pass[] = "";       // your network password
 unsigned int localPort = 2390;      // local port to listen for UDP packets
 
 const char* ntpServerName = "ntp.pagasa.dost.gov.ph";
+IPAddress timeServerIP(121, 58, 193, 100);	//IP address of "ntp.pagasa.dost.gov.ph"
 
 // NTP time stamp is in the first 48 bytes of the message
 const int NTP_PACKET_SIZE = 48; 
@@ -33,6 +34,7 @@ const int SPI_CS = 15;
 unsigned char scrollText[] =
 { "00:00:00am \0" };
 // 01234567890
+
 
 void InitMax7219();
 void UpdateTime(void);
@@ -59,8 +61,6 @@ void setup() {
 	}
 	ResetScrollPos();
 
-	httpd_init();
-
 	Serial.begin(115200);
 	Serial.println("WiFi connected");
 	Serial.println("IP address: ");
@@ -71,7 +71,15 @@ void setup() {
 	Serial.print("Local port: ");
 	Serial.println(udp.localPort());
 
+	IPAddress addr;
+	if (WiFi.hostByName(ntpServerName, addr))
+	{
+		timeServerIP = addr;
+	}
+
 	setSyncProvider(getNtpTime);
+
+	httpd_init();
 }
 
 void loop() {
@@ -125,10 +133,7 @@ int packet_delay = 0;
 
 time_t getNtpTime()
 {
-	IPAddress timeServerIP;
-
 	Serial.println("Transmit NTP Request");
-	WiFi.hostByName(ntpServerName, timeServerIP);
 	sendNTPpacket(timeServerIP); // send an NTP packet to a time server
 	packet_delay = 1500;		 // wait to see if a reply is available
 
