@@ -43,12 +43,12 @@
 
 /** Set this to 1 to support CGI */
 #ifndef LWIP_HTTPD_CGI
-#define LWIP_HTTPD_CGI            0
+#define LWIP_HTTPD_CGI            1
 #endif
 
 /** Set this to 1 to support SSI (Server-Side-Includes) */
 #ifndef LWIP_HTTPD_SSI
-#define LWIP_HTTPD_SSI            0
+#define LWIP_HTTPD_SSI            1
 #endif
 
 /** Set this to 1 to support HTTP POST */
@@ -164,7 +164,7 @@ void http_set_ssi_handler(tSSIHandler pfnSSIHandler,
 
 /* The maximum length of the string comprising the tag name */
 #ifndef LWIP_HTTPD_MAX_TAG_NAME_LEN
-#define LWIP_HTTPD_MAX_TAG_NAME_LEN 8
+#define LWIP_HTTPD_MAX_TAG_NAME_LEN 1
 #endif
 
 /* The maximum length of string that can be returned to replace any given tag */

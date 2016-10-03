@@ -1,6 +1,71 @@
 
 extern "C" {
-#include "httpd.h"
+	#include "httpd.h"
+
+	bool bLED1 = false;
+	bool bLED2 = false;
+	bool bLED3 = false;
+	bool bLED4 = false;
+
+	void DoLED1(void)
+	{
+		//Serial.println(F("LED1"));
+		if (bLED1)
+		{
+			bLED1 = false;
+			digitalWrite(LED_BUILTIN, HIGH);
+		}
+		else
+		{
+			bLED1 = true;
+			digitalWrite(LED_BUILTIN, LOW);
+		}
+	}
+
+	void DoLED2(void)
+	{
+		//Serial.println(F("LED2"));
+		if (bLED2)
+		{
+			bLED2 = false;
+		}
+		else
+		{
+			bLED2 = true;
+		}
+	}
+
+	void DoLED3(void)
+	{
+		//Serial.println(F("LED3"));
+		if (bLED3)
+		{
+			bLED3 = false;
+		}
+		else
+		{
+			bLED3 = true;
+		}
+	}
+
+	void DoLED4(void)
+	{
+		//Serial.println(F("LED4"));
+		if (bLED4)
+		{
+			bLED4 = false;
+		}
+		else
+		{
+			bLED4 = true;
+		}
+	}
+
+	int ADC_GetConversionValue()
+	{
+		return analogRead(A0);
+	}
+
 }
 
 #include <ESP8266WiFi.h>
@@ -29,7 +94,7 @@ WiFiUDP udp;
 const int numDevices = 4;      // number of MAX7219s used
 const int SPI_MOSI = 13;
 const int SPI_CLK = 14;
-const int SPI_CS = 15;
+const int SPI_CS = 16;
 
 unsigned char scrollText[] =
 { "00:00:00am \0" };
