@@ -1,13 +1,9 @@
 
-#ifdef ESP_H
-#undef PROGMEM
-#ifndef PROGMEM
-#define PROGMEM
-#endif
+#if defined(ESP8266)
+#include <pgmspace.h>
 #else
 #include <avr/pgmspace.h>
 #endif
-
 
 /*////////////////////////////////////////////////////////////////////////////////*/
 
@@ -784,7 +780,7 @@ const char font7x5_kern[] PROGMEM = {
 	6,6,6,4,2,4,6,5,
 };
 
-const int font7x5_offset[] PROGMEM = {
+const int font7x5_offset[] = {
 	0,  6,  8, 12, 18, 24, 30, 36,
 	39, 43, 47, 53, 59, 62, 68, 71,
 	77, 83, 89, 95,101,107,113,119,
@@ -829,24 +825,24 @@ char LoadColumnBuffer(char ascii)
 	char kern = 0;
 	if (ascii >= 0x20 && ascii <= 0x7f)
 	{
-#ifdef ESP_H
-		kern = font7x5_kern[ascii - 0x20];
+		kern = pgm_read_byte_near(font7x5_kern + (ascii - 0x20));
+#if defined(ESP8266)
 		int offset = font7x5_offset[ascii - 0x20];
 #else
-		kern = pgm_read_byte_near(font7x5_kern + (ascii-0x20));
 		int offset = pgm_read_word_near(font7x5_offset + (ascii-0x20));
 #endif
 
+#if defined(ESP8266)
+		memcpy_P(&ColumnBuffer[LoadPos], font7x5 + offset, kern);
+#else
 		for (int i = 0; i < kern; i++)
 		{
 			if (LoadPos >= ColumnBufferLen) return i;
-#ifdef ESP_H
-			ColumnBuffer[LoadPos] = font7x5[offset];
-#else
 			ColumnBuffer[LoadPos] = pgm_read_byte_near(font7x5 + offset);
-#endif
-			LoadPos++; offset++;
+			offset++;
 		}
+#endif
+		LoadPos += kern;
 	}
 	return kern;
 }
