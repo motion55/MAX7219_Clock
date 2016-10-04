@@ -115,15 +115,19 @@ void setup() {
 	// put your setup code here, to run once:
 	InitMax7219();
 
-	setTime(12, 59, 0, 23, 7, 2016);
+	DS3231_setup();
+
+	//setTime(12, 59, 0, 23, 7, 2016);
 
 	//WiFi.begin(ssid, pass);
 
-	unsigned char ConnectStr[] = { "Connecting.\0" };
-	ResetScrollPos();
+	unsigned char ConnectStr[] = { "Connecting. \0" };
 
+	ResetScrollPos();
 	int Len = LoadMessage(ConnectStr);
-	while (WiFi.status() != WL_CONNECTED) {
+	for (int i=0; i<100; i++)
+	{
+		if (WiFi.status() == WL_CONNECTED) break;
 		LoadDisplayBuffer(Len);
 		delay(100);
 	}
@@ -209,7 +213,6 @@ time_t getNtpTime()
 {
 	Serial.println(F("Transmit NTP Request"));
 	sendNTPpacket(timeServerIP); // send an NTP packet to a time server
-	packet_delay = 1500;		 // wait to see if a reply is available
 
 	return 0;
 }
@@ -240,6 +243,7 @@ void my_delay_ms(int msec)
 
 				time_t tm = secsSince1900 - 2208988800UL + timeZone;
 				setTime(tm);
+				DS3231_setTime(tm);
 				packet_delay = 0;
 			}
 		}
@@ -254,25 +258,30 @@ void my_delay_ms(int msec)
 // send an NTP request to the time server at the given address
 void sendNTPpacket(IPAddress& address)
 {
-	Serial.println(F("sending NTP packet..."));
-	// set all bytes in the buffer to 0
-	memset(packetBuffer, 0, NTP_PACKET_SIZE);
-	// Initialize values needed to form NTP request
-	// (see URL above for details on the packets)
-	packetBuffer[0] = 0b11100011;   // LI, Version, Mode
-	packetBuffer[1] = 0;     // Stratum, or type of clock
-	packetBuffer[2] = 6;     // Polling Interval
-	packetBuffer[3] = 0xEC;  // Peer Clock Precision
-							 // 8 bytes of zero for Root Delay & Root Dispersion
-	packetBuffer[12] = 49;
-	packetBuffer[13] = 0x4E;
-	packetBuffer[14] = 49;
-	packetBuffer[15] = 52;
+	if (WiFi.status() == WL_CONNECTED)
+	{
+		Serial.println(F("sending NTP packet..."));
+		// set all bytes in the buffer to 0
+		memset(packetBuffer, 0, NTP_PACKET_SIZE);
+		// Initialize values needed to form NTP request
+		// (see URL above for details on the packets)
+		packetBuffer[0] = 0b11100011;   // LI, Version, Mode
+		packetBuffer[1] = 0;     // Stratum, or type of clock
+		packetBuffer[2] = 6;     // Polling Interval
+		packetBuffer[3] = 0xEC;  // Peer Clock Precision
+								 // 8 bytes of zero for Root Delay & Root Dispersion
+		packetBuffer[12] = 49;
+		packetBuffer[13] = 0x4E;
+		packetBuffer[14] = 49;
+		packetBuffer[15] = 52;
 
-	// all NTP fields have been given values, now
-	// you can send a packet requesting a timestamp:
-	udp.beginPacket(address, 123); //NTP requests are to port 123
-	udp.write(packetBuffer, NTP_PACKET_SIZE);
-	udp.endPacket();
+		// all NTP fields have been given values, now
+		// you can send a packet requesting a timestamp:
+		udp.beginPacket(address, 123); //NTP requests are to port 123
+		udp.write(packetBuffer, NTP_PACKET_SIZE);
+		udp.endPacket();
+
+		packet_delay = 1500;		 // wait to see if a reply is available
+	}
 }
 
