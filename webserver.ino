@@ -44,7 +44,7 @@ void rootPageHandler()
 	}
 
 	response_message += "<ul><li><a href=\"/wlan_config\">Configure WLAN settings</a></li>";
-	response_message += "<li><a href=\"/gpio\">Control GPIO pins</h4></li></ul>";
+	response_message += "<li><a href=\"/gpio\">Display Logo On/Off</h4></li></ul>";
 	response_message += "</body></html>";
 
 	server.send(200, "text/html", response_message);
@@ -88,6 +88,8 @@ void wlanPageHandler()
 	response_message += "<html>";
 	response_message += "<head><title>ESP8266 Webserver</title></head>";
 	response_message += "<body style=\"background-color:PaleGoldenRod\"><h1><center>WLAN Settings</center></h1>";
+
+	response_message += "<ul><li><a href=\"/\">Return to main page</a></li></ul>";
 
 	if (WiFi.status() == WL_CONNECTED)
 	{
@@ -169,6 +171,8 @@ void gpioPageHandler()
 	String response_message = "<html><head><title>ESP8266 Webserver</title></head>";
 	response_message += "<body style=\"background-color:PaleGoldenRod\"><h1><center>Control GPIO pins</center></h1>";
 	response_message += "<form method=\"get\">";
+
+	response_message += "<ul><li><a href=\"/\">Return to main page</a></li></ul>";
 
 	response_message += "LOGO:<br>";
 
