@@ -74,8 +74,8 @@ extern "C" {
 #include <Time.h>
 #include <TimeLib.h>
 
-char ssid[] = "BST";  //  your network SSID (name)
-char pass[] = "";       // your network password
+char ssid[] = "BST";	//  your network SSID (name)
+char pass[] = "";		// your network password
 
 unsigned int localPort = 2390;      // local port to listen for UDP packets
 
@@ -100,6 +100,7 @@ unsigned char scrollText[] =
 { "00:00:00am \0" };
 // 01234567890
 
+#define	_USE_WEBSERVER_	1
 
 void InitMax7219();
 void UpdateTime(void);
@@ -108,17 +109,19 @@ void ResetScrollPos(void);
 int LoadDisplayBuffer(int BufferLen);
 void sendNTPpacket(IPAddress& address);
 
+/*///////////////////////////////////////////////////////////////////////////*/
+
 void setup() {
 	// put your setup code here, to run once:
 	InitMax7219();
 
 	setTime(12, 59, 0, 23, 7, 2016);
 
+	//WiFi.begin(ssid, pass);
+
 	unsigned char ConnectStr[] = { "Connecting.\0" };
-
-	WiFi.begin(ssid, pass);
-
 	ResetScrollPos();
+
 	int Len = LoadMessage(ConnectStr);
 	while (WiFi.status() != WL_CONNECTED) {
 		LoadDisplayBuffer(Len);
@@ -127,13 +130,13 @@ void setup() {
 	ResetScrollPos();
 
 	Serial.begin(115200);
-	Serial.println("WiFi connected");
-	Serial.println("IP address: ");
+	Serial.println(F("WiFi connected"));
+	Serial.println(F("IP address: "));
 	Serial.println(WiFi.localIP());
 
-	Serial.println("Starting UDP");
+	Serial.println(F("Starting UDP"));
 	udp.begin(localPort);
-	Serial.print("Local port: ");
+	Serial.print(F("Local port: "));
 	Serial.println(udp.localPort());
 
 	IPAddress addr;
@@ -144,7 +147,11 @@ void setup() {
 
 	setSyncProvider(getNtpTime);
 
+#if _USE_WEBSERVER_
+	webserver_setup();
+#else
 	httpd_init();
+#endif
 }
 
 void loop() {
@@ -154,6 +161,8 @@ void loop() {
 	LoadDisplayBuffer(Len);
 	my_delay_ms(100);
 }
+
+/*///////////////////////////////////////////////////////////////////////////*/
 
 void UpdateTime(void)
 {
@@ -198,7 +207,7 @@ int packet_delay = 0;
 
 time_t getNtpTime()
 {
-	Serial.println("Transmit NTP Request");
+	Serial.println(F("Transmit NTP Request"));
 	sendNTPpacket(timeServerIP); // send an NTP packet to a time server
 	packet_delay = 1500;		 // wait to see if a reply is available
 
@@ -212,12 +221,15 @@ void my_delay_ms(int msec)
 	uint32_t beginWait = endWait;
 	while (endWait - beginWait < delay_val) 
 	{
+#if _USE_WEBSERVER_
+		webserver_loop();
+#endif
 		int size = udp.parsePacket();
 		if (packet_delay > 0)
 		{
 			if (size >= NTP_PACKET_SIZE)
 			{
-				Serial.println("Receive NTP Response");
+				Serial.println(F("Receive NTP Response"));
 				udp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
 				unsigned long secsSince1900;
 				// convert four bytes starting at location 40 to a long integer
@@ -242,7 +254,7 @@ void my_delay_ms(int msec)
 // send an NTP request to the time server at the given address
 void sendNTPpacket(IPAddress& address)
 {
-	Serial.println("sending NTP packet...");
+	Serial.println(F("sending NTP packet..."));
 	// set all bytes in the buffer to 0
 	memset(packetBuffer, 0, NTP_PACKET_SIZE);
 	// Initialize values needed to form NTP request
@@ -263,3 +275,4 @@ void sendNTPpacket(IPAddress& address)
 	udp.write(packetBuffer, NTP_PACKET_SIZE);
 	udp.endPacket();
 }
+
