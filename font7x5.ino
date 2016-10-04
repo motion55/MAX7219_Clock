@@ -812,7 +812,7 @@ void InitMax7219()
 }
 
 int LoadPos = 0;
-const int ColumnBufferLen = 64;
+const int ColumnBufferLen = 256;
 unsigned char ColumnBuffer[ColumnBufferLen];
 
 void ResetColumnBuffer()

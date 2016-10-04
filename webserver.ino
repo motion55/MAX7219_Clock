@@ -131,6 +131,21 @@ void wlanPageHandler()
 	server.send(200, "text/html", response_message);
 }
 
+boolean bLogo = false;
+
+inline boolean LogoOn()
+{
+	return bLogo;
+}
+
+unsigned char LogoStr[] = { "->Pamantasan ng Lungsod ng Marikina<- \0" };
+int LogoLen;
+
+inline void DisplayLogo()
+{
+	LoadDisplayBuffer(LogoLen);
+}
+
 /* GPIO page allows you to control the GPIO pins */
 void gpioPageHandler()
 {
@@ -139,21 +154,25 @@ void gpioPageHandler()
 	{
 		if (server.arg("gpio2") == "1")
 		{
-			digitalWrite(GPIO2, HIGH);
+			//digitalWrite(GPIO2, HIGH);
+			bLogo = true;
+			LogoLen = LoadMessage(LogoStr);
 		}
 		else
 		{
-			digitalWrite(GPIO2, LOW);
+			//digitalWrite(GPIO2, LOW);
+			bLogo = false;
 		}
+		ResetScrollPos();
 	}
 
 	String response_message = "<html><head><title>ESP8266 Webserver</title></head>";
 	response_message += "<body style=\"background-color:PaleGoldenRod\"><h1><center>Control GPIO pins</center></h1>";
 	response_message += "<form method=\"get\">";
 
-	response_message += "GPIO2:<br>";
+	response_message += "LOGO:<br>";
 
-	if (digitalRead(GPIO2) == LOW)
+	if (bLogo == false)
 	{
 		response_message += "<input type=\"radio\" name=\"gpio2\" value=\"1\" onclick=\"submit();\">On<br>";
 		response_message += "<input type=\"radio\" name=\"gpio2\" value=\"0\" onclick=\"submit();\" checked>Off<br>";

@@ -161,8 +161,15 @@ void setup() {
 void loop() {
 	// put your main code here, to run repeatedly:
 	UpdateTime();
-	int Len = LoadMessage(scrollText);
-	LoadDisplayBuffer(Len);
+	if (LogoOn())
+	{
+		DisplayLogo();
+	}
+	else
+	{
+		int Len = LoadMessage(scrollText);
+		LoadDisplayBuffer(Len);
+	}
 	my_delay_ms(100);
 }
 
