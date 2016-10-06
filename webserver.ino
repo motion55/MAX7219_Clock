@@ -140,14 +140,6 @@ inline boolean LogoOn()
 	return bLogo;
 }
 
-unsigned char LogoStr[] = { "->Pamantasan ng Lungsod ng Marikina<- \0" };
-int LogoLen;
-
-inline void DisplayLogo()
-{
-	LoadDisplayBuffer(LogoLen);
-}
-
 /* GPIO page allows you to control the GPIO pins */
 void gpioPageHandler()
 {

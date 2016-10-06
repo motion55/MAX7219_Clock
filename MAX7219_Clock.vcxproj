@@ -84,18 +84,7 @@
     <None Include="webserver.ino" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="fs.h" />
-    <ClInclude Include="fsdata.h" />
-    <ClInclude Include="fsdata_custom.h" />
-    <ClInclude Include="httpd.h" />
-    <ClInclude Include="httpd_structs.h" />
-    <ClInclude Include="sketch.h" />
     <ClInclude Include="__vm\.MAX7219_Clock.vsarduino.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="fs.c" />
-    <ClCompile Include="httpd.c" />
-    <ClCompile Include="httpd_cgi_ssi.c" />
   </ItemGroup>
   <PropertyGroup>
     <DebuggerFlavor>VisualMicroDebugger</DebuggerFlavor>

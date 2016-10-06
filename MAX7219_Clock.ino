@@ -1,73 +1,4 @@
 
-extern "C" {
-	#include "httpd.h"
-
-	bool bLED1 = false;
-	bool bLED2 = false;
-	bool bLED3 = false;
-	bool bLED4 = false;
-
-	void DoLED1(void)
-	{
-		//Serial.println(F("LED1"));
-		if (bLED1)
-		{
-			bLED1 = false;
-			digitalWrite(LED_BUILTIN, HIGH);
-		}
-		else
-		{
-			bLED1 = true;
-			digitalWrite(LED_BUILTIN, LOW);
-		}
-	}
-
-	void DoLED2(void)
-	{
-		//Serial.println(F("LED2"));
-		if (bLED2)
-		{
-			bLED2 = false;
-		}
-		else
-		{
-			bLED2 = true;
-		}
-	}
-
-	void DoLED3(void)
-	{
-		//Serial.println(F("LED3"));
-		if (bLED3)
-		{
-			bLED3 = false;
-		}
-		else
-		{
-			bLED3 = true;
-		}
-	}
-
-	void DoLED4(void)
-	{
-		//Serial.println(F("LED4"));
-		if (bLED4)
-		{
-			bLED4 = false;
-		}
-		else
-		{
-			bLED4 = true;
-		}
-	}
-
-	int ADC_GetConversionValue()
-	{
-		return analogRead(A0);
-	}
-
-}
-
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
@@ -99,8 +30,6 @@ const int SPI_CS = 16;
 unsigned char scrollText[] =
 { "00:00:00am \0" };
 // 01234567890
-
-#define	_USE_WEBSERVER_	1
 
 void InitMax7219();
 void UpdateTime(void);
@@ -151,11 +80,7 @@ void setup() {
 
 	setSyncProvider(getNtpTime);
 
-#if _USE_WEBSERVER_
 	webserver_setup();
-#else
-	httpd_init();
-#endif
 }
 
 void loop() {
@@ -164,13 +89,14 @@ void loop() {
 	if (LogoOn())
 	{
 		DisplayLogo();
+		my_delay_ms(50);
 	}
 	else
 	{
 		int Len = LoadMessage(scrollText);
 		LoadDisplayBuffer(Len);
+		my_delay_ms(100);
 	}
-	my_delay_ms(100);
 }
 
 /*///////////////////////////////////////////////////////////////////////////*/
@@ -231,9 +157,8 @@ void my_delay_ms(int msec)
 	uint32_t beginWait = endWait;
 	while (endWait - beginWait < delay_val) 
 	{
-#if _USE_WEBSERVER_
 		webserver_loop();
-#endif
+
 		int size = udp.parsePacket();
 		if (packet_delay > 0)
 		{
@@ -292,3 +217,12 @@ void sendNTPpacket(IPAddress& address)
 	}
 }
 
+/*///////////////////////////////////////////////////////////////////////////*/
+
+unsigned char LogoStr[] = { "->Pamantasan ng Lungsod ng Marikina<- \0" };
+int LogoLen;
+
+inline void DisplayLogo()
+{
+	LoadDisplayBuffer(LogoLen);
+}
