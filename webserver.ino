@@ -36,15 +36,15 @@ void rootPageHandler()
 
 	if (WiFi.status() == WL_CONNECTED)
 	{
-		response_message += "<center>WLAN Status: Connected</center><br>";
+		response_message += "<h3><center>WLAN Status: Connected</center></h3>";
 	}
 	else
 	{
-		response_message += "<center>WLAN Status: Disconnected</center><br>";
+		response_message += "<h3><center>WLAN Status: Disconnected</center></h3>";
 	}
 
-	response_message += "<ul><li><a href=\"/wlan_config\">Configure WLAN settings</a></li>";
-	response_message += "<li><a href=\"/gpio\">Display Logo On/Off</h4></li></ul>";
+	response_message += "<h4><center><a href=\"/wlan_config\">Configure WLAN settings</a></center></h4>";
+	response_message += "<h4><center><a href=\"/gpio\">Display Logo On/Off</h4></li></center></h4>";
 	response_message += "</body></html>";
 
 	server.send(200, "text/html", response_message);
