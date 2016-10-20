@@ -838,11 +838,11 @@ char LoadColumnBuffer(char ascii)
 		for (int i = 0; i < kern; i++)
 		{
 			if (LoadPos >= ColumnBufferLen) return i;
-			ColumnBuffer[LoadPos] = pgm_read_byte_near(font7x5 + offset);
+			ColumnBuffer[LoadPos++] = pgm_read_byte_near(font7x5 + offset);
 			offset++;
 		}
 #endif
-		LoadPos += kern;
+		//LoadPos += kern;
 	}
 	return kern;
 }
