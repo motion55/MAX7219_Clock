@@ -842,7 +842,7 @@ char LoadColumnBuffer(char ascii)
 			offset++;
 		}
 #endif
-		//LoadPos += kern;
+		LoadPos += kern;
 	}
 	return kern;
 }

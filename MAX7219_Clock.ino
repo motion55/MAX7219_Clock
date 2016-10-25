@@ -23,9 +23,9 @@ byte packetBuffer[NTP_PACKET_SIZE];
 WiFiUDP udp;
 
 const int numDevices = 4;      // number of MAX7219s used
+const int SPI_CS = 12;
 const int SPI_MOSI = 13;
 const int SPI_CLK = 14;
-const int SPI_CS = 16;
 
 unsigned char scrollText[] =
 { "00:00:00am \0" };
