@@ -23,9 +23,9 @@ byte packetBuffer[NTP_PACKET_SIZE];
 WiFiUDP udp;
 
 const int numDevices = 4;      // number of MAX7219s used
+const int SPI_CS = 12;
 const int SPI_MOSI = 13;
 const int SPI_CLK = 14;
-const int SPI_CS = 16;
 
 unsigned char scrollText[] =
 { "00:00:00am \0" };
@@ -219,7 +219,7 @@ void sendNTPpacket(IPAddress& address)
 
 /*///////////////////////////////////////////////////////////////////////////*/
 
-unsigned char LogoStr[] = { "->Pamantasan ng Lungsod ng Marikina<- \0" };
+unsigned char LogoStr[] = { "->Synced to PAGASA NTP server using ESP8266<- \0" };
 int LogoLen;
 
 inline void DisplayLogo()
