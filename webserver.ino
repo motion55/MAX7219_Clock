@@ -146,7 +146,7 @@ inline boolean LogoOn()
 	return bLogo;
 }
 
-const char LogoStr[] = { " ->Synced to PAGASA<- \0" };
+const char LogoStr[] = " -> Synchronized to PAGASA NTP server <- ";
 int LogoLen;
 
 inline void DisplayLogo()
@@ -167,7 +167,7 @@ void gpioPageHandler()
 			//digitalWrite(GPIO2, HIGH);
 			bLogo = true;
 			LogoLen = LoadMessage(LogoStr);
-			Serial.print("Logo loaded. Length =");
+			Serial.print("Logo loaded. Length = ");
 			Serial.println(LogoLen);
 		}
 		else

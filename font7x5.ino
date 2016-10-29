@@ -807,9 +807,9 @@ void InitMax7219()
 	}
 }
 
-int LoadPos = 0;
 const int ColumnBufferLen = 256;
 unsigned char ColumnBuffer[ColumnBufferLen];
+int LoadPos = 0;
 
 void ResetColumnBuffer()
 {
@@ -833,6 +833,7 @@ char LoadColumnBuffer(char ascii)
 #endif
 
 #if defined(ESP8266)
+		if ((LoadPos + kern) > ColumnBufferLen) kern = ColumnBufferLen - LoadPos;
 		memcpy_P(&ColumnBuffer[LoadPos], font7x5 + offset, kern);
 #else
 		for (int i = 0; i < kern; i++)
