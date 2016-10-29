@@ -217,11 +217,11 @@ const unsigned char font7x5[] PROGMEM = {
 	0b00110000,
 	0b00000000,
 	// - offset = 62
-	0b00000100,
-	0b00000100,
-	0b00000100,
-	0b00000100,
-	0b00000100,
+	0b00001000,
+	0b00001000,
+	0b00001000,
+	0b00001000,
+	0b00001000,
 	0b00000000,
 	// . offset = 68
 	0b01100000,
@@ -847,7 +847,7 @@ char LoadColumnBuffer(char ascii)
 	return kern;
 }
 
-int LoadMessage(unsigned char * message)
+int LoadMessage(const char *message)
 {
 	ResetColumnBuffer();
 	for (int counter = 0; ; counter++)

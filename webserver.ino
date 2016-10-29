@@ -1,4 +1,10 @@
 
+#if defined(ESP8266)
+#include <pgmspace.h>
+#else
+#include <avr/pgmspace.h>
+#endif
+
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h> 
 #include <ESP8266WebServer.h>
@@ -65,9 +71,9 @@ void wlanPageHandler()
 			WiFi.begin(server.arg("ssid").c_str());
 		}
 
-		unsigned char ConnectStr[] = { "Reconnect. \0" };
+		String ReConnectStr("Reconnect. ");
 		ResetScrollPos();
-		int Len = LoadMessage(ConnectStr);
+		int Len = LoadMessage(ReConnectStr.c_str());
 
 		while (WiFi.status() != WL_CONNECTED)
 		{
@@ -140,6 +146,16 @@ inline boolean LogoOn()
 	return bLogo;
 }
 
+const char LogoStr[] = { " ->Synced to PAGASA<- \0" };
+int LogoLen;
+
+inline void DisplayLogo()
+{
+	LoadDisplayBuffer(LogoLen);
+}
+
+/*///////////////////////////////////////////////////////////////////////////*/
+
 /* GPIO page allows you to control the GPIO pins */
 void gpioPageHandler()
 {
@@ -151,6 +167,8 @@ void gpioPageHandler()
 			//digitalWrite(GPIO2, HIGH);
 			bLogo = true;
 			LogoLen = LoadMessage(LogoStr);
+			Serial.print("Logo loaded. Length =");
+			Serial.println(LogoLen);
 		}
 		else
 		{
@@ -203,3 +221,4 @@ void handleNotFound()
 
 	server.send(404, "text/plain", message);
 }
+

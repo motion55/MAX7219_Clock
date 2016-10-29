@@ -1,4 +1,10 @@
 
+#if defined(ESP8266)
+#include <pgmspace.h>
+#else
+#include <avr/pgmspace.h>
+#endif
+
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
@@ -27,13 +33,12 @@ const int SPI_CS = 12;
 const int SPI_MOSI = 13;
 const int SPI_CLK = 14;
 
-unsigned char scrollText[] =
-{ "00:00:00am \0" };
-// 01234567890
+char scrollText[] = "00:00:00am \0";
+//                   01234567890
 
 void InitMax7219();
 void UpdateTime(void);
-int LoadMessage(unsigned char * message);
+int LoadMessage(const char *message);
 void ResetScrollPos(void);
 int LoadDisplayBuffer(int BufferLen);
 void sendNTPpacket(IPAddress& address);
@@ -46,19 +51,15 @@ void setup() {
 
 	DS3231_setup();
 
-	//setTime(12, 59, 0, 23, 7, 2016);
-
-	//WiFi.begin(ssid, pass);
-
-	unsigned char ConnectStr[] = { "Connecting. \0" };
+	String ConnectStr("Connecting. ");
 
 	ResetScrollPos();
-	int Len = LoadMessage(ConnectStr);
-	for (int i=0; i<100; i++)
+	int Len = LoadMessage(ConnectStr.c_str());
+	for (int i=0; i<200; i++)
 	{
 		if (WiFi.status() == WL_CONNECTED) break;
 		LoadDisplayBuffer(Len);
-		delay(100);
+		delay(50);
 	}
 	ResetScrollPos();
 
@@ -95,7 +96,7 @@ void loop() {
 	{
 		int Len = LoadMessage(scrollText);
 		LoadDisplayBuffer(Len);
-		my_delay_ms(100);
+		my_delay_ms(50);
 	}
 }
 
@@ -217,12 +218,3 @@ void sendNTPpacket(IPAddress& address)
 	}
 }
 
-/*///////////////////////////////////////////////////////////////////////////*/
-
-unsigned char LogoStr[] = { "->Synced to PAGASA NTP server using ESP8266<- \0" };
-int LogoLen;
-
-inline void DisplayLogo()
-{
-	LoadDisplayBuffer(LogoLen);
-}
