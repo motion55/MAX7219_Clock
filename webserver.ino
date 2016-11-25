@@ -71,23 +71,25 @@ void wlanPageHandler()
 			WiFi.begin(server.arg("ssid").c_str());
 		}
 
-		String ReConnectStr("Reconnect. ");
+		String ReConnectStr("Reconnecting... ");
 		ResetScrollPos();
 		int Len = LoadMessage(ReConnectStr.c_str());
 
-		while (WiFi.status() != WL_CONNECTED)
+		for (int i = 0; i<200; i++)
 		{
+			if (WiFi.status() == WL_CONNECTED)
+			{
+				Serial.println("WiFi reconnected");
+				Serial.println("New IP address: ");
+				Serial.println(WiFi.localIP());
+				break;
+			}
 			LoadDisplayBuffer(Len);
-			delay(100);
-			Serial.print(".");
+			delay(50);
 		}
-
-		Serial.println("");
-		Serial.println("WiFi connected");
-		Serial.println("IP address: ");
-		Serial.println(WiFi.localIP());
-
+		ResetScrollPos();
 		delay(1000);
+		webserver_setup();
 	}
 
 	String response_message = "";

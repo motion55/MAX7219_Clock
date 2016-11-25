@@ -47,26 +47,31 @@ void sendNTPpacket(IPAddress& address);
 
 void setup() {
 	// put your setup code here, to run once:
+	Serial.begin(115200);
+
 	InitMax7219();
 
 	DS3231_setup();
 
-	String ConnectStr("Connecting. ");
+	String ConnectStr("Connecting... ");
 
 	ResetScrollPos();
 	int Len = LoadMessage(ConnectStr.c_str());
 	for (int i=0; i<200; i++)
 	{
-		if (WiFi.status() == WL_CONNECTED) break;
+		if (WiFi.status() == WL_CONNECTED)
+		{
+			Serial.println(F("WiFi connected"));
+			Serial.println(F("IP address: "));
+			Serial.println(WiFi.localIP());
+			break;
+		}
 		LoadDisplayBuffer(Len);
 		delay(50);
 	}
-	ResetScrollPos();
+	InitMax7219();
 
-	Serial.begin(115200);
-	Serial.println(F("WiFi connected"));
-	Serial.println(F("IP address: "));
-	Serial.println(WiFi.localIP());
+	ResetScrollPos();
 
 	Serial.println(F("Starting UDP"));
 	udp.begin(localPort);
