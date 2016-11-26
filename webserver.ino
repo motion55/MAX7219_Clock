@@ -148,12 +148,9 @@ inline boolean LogoOn()
 	return bLogo;
 }
 
-const char LogoStr[] = " -> Synchronized to PAGASA NTP server <- ";
-int LogoLen;
-
-inline void DisplayLogo()
+int DisplayLogo()
 {
-	LoadDisplayBuffer(LogoLen);
+	LoadDisplayBuffer(LoadPos);
 }
 
 /*///////////////////////////////////////////////////////////////////////////*/
@@ -168,9 +165,7 @@ void gpioPageHandler()
 		{
 			//digitalWrite(GPIO2, HIGH);
 			bLogo = true;
-			LogoLen = LoadMessage(LogoStr);
-			Serial.print("Logo loaded. Length = ");
-			Serial.println(LogoLen);
+			LoadDisplayBMP280();
 		}
 		else
 		{

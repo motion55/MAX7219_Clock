@@ -5,6 +5,21 @@
 #include <avr/pgmspace.h>
 #endif
 
+#include <Wire.h>
+#include <SPI.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BMP280.h>
+
+#define BMP_SCK 14
+#define BMP_MISO 12
+#define BMP_MOSI 13 
+#define BMP_CS 15
+
+Adafruit_BMP280 bme; // I2C
+//Adafruit_BMP280 bme(BMP_CS); // hardware SPI
+//Adafruit_BMP280 bme(BMP_CS, BMP_MOSI, BMP_MISO,  BMP_SCK);
+boolean Use_bmp280;
+
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
@@ -36,6 +51,8 @@ const int SPI_CLK = 14;
 char scrollText[] = "00:00:00am \0";
 //                   01234567890
 
+extern int LoadPos;
+
 void InitMax7219();
 void UpdateTime(void);
 int LoadMessage(const char *message);
@@ -43,11 +60,27 @@ void ResetScrollPos(void);
 int LoadDisplayBuffer(int BufferLen);
 void sendNTPpacket(IPAddress& address);
 
+void LoadDisplayBMP280(void);
+float Temperature, Pressure, Altitude;
+
 /*///////////////////////////////////////////////////////////////////////////*/
 
 void setup() {
 	// put your setup code here, to run once:
 	Serial.begin(115200);
+
+	if (!bme.begin()) 
+	{
+		Serial.println("Could not find a valid BMP280 sensor, check wiring!");
+		Use_bmp280 = false;
+	}
+	else
+	{
+		Temperature = bme.readTemperature();
+		Pressure = bme.readPressure();
+		Altitude = bme.readAltitude(SENSORS_PRESSURE_SEALEVELHPA);
+		Use_bmp280 = true;
+	}
 
 	InitMax7219();
 
@@ -66,7 +99,7 @@ void setup() {
 			Serial.println(WiFi.localIP());
 			break;
 		}
-		LoadDisplayBuffer(Len);
+		LoadDisplayBuffer(LoadPos);
 		delay(50);
 	}
 	InitMax7219();
@@ -94,13 +127,19 @@ void loop() {
 	UpdateTime();
 	if (LogoOn())
 	{
-		DisplayLogo();
+		if (DisplayLogo() == 0)
+		{
+			if (Use_bmp280)
+			{
+				LoadDisplayBMP280();
+			}
+		}
 		my_delay_ms(50);
 	}
 	else
 	{
 		int Len = LoadMessage(scrollText);
-		LoadDisplayBuffer(Len);
+		LoadDisplayBuffer(LoadPos);
 		my_delay_ms(50);
 	}
 }
@@ -223,3 +262,21 @@ void sendNTPpacket(IPAddress& address)
 	}
 }
 
+void LoadDisplayBMP280(void)
+{
+	if (Use_bmp280)
+	{
+		String bmp280_str = String(bme.readTemperature(), 1);
+		bmp280_str += String("C ");
+		bmp280_str += String(bme.readPressure() / 100.0, 2);
+		bmp280_str += String("HPa ");
+		bmp280_str += String(bme.readAltitude(SENSORS_PRESSURE_SEALEVELHPA), 2);
+		bmp280_str += String("m. ");
+		LoadMessage(bmp280_str.c_str());
+	}
+	else
+	{
+		LoadMessage(" No BMP280 detected! ");
+	}
+	ResetScrollPos();
+}
