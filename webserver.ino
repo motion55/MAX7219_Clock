@@ -141,7 +141,7 @@ void wlanPageHandler()
 	server.send(200, "text/html", response_message);
 }
 
-boolean bLogo = false;
+boolean bLogo = true;
 
 inline boolean LogoOn()
 {
@@ -150,7 +150,7 @@ inline boolean LogoOn()
 
 int DisplayLogo()
 {
-	LoadDisplayBuffer(LoadPos);
+	return LoadDisplayBuffer(LoadPos);
 }
 
 /*///////////////////////////////////////////////////////////////////////////*/
