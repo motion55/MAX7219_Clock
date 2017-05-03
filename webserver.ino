@@ -9,10 +9,6 @@
 #include <WiFiClient.h> 
 #include <ESP8266WebServer.h>
 
-// Access point credentials
-const char *ap_ssid = "ESPap";
-const char *ap_password = "thereisnospoon";
-
 // ESP8266 GPIO pins
 #define GPIO2 2
 
@@ -37,8 +33,8 @@ inline void webserver_loop()
 /* Root page for the webserver */
 void rootPageHandler()
 {
-	String response_message = "<html><head><title>ESP8266 Webserver</title></head>";
-	response_message += "<body style=\"background-color:PaleGoldenRod\"><h1><center>ESP8266 Webserver</center></h1>";
+	String response_message = "<html><head><title>MAX7219 LED Matrix</title></head>";
+	response_message += "<body style=\"background-color:PaleGoldenRod\"><h1><center>MAX7219 LED Matrix</center></h1>";
 
 	if (WiFi.status() == WL_CONNECTED)
 	{
@@ -94,7 +90,7 @@ void wlanPageHandler()
 
 	String response_message = "";
 	response_message += "<html>";
-	response_message += "<head><title>ESP8266 Webserver</title></head>";
+	response_message += "<head><title>MAX7219 LED Matrix</title></head>";
 	response_message += "<body style=\"background-color:PaleGoldenRod\"><h1><center>WLAN Settings</center></h1>";
 
 	response_message += "<ul><li><a href=\"/\">Return to main page</a></li></ul>";
@@ -124,14 +120,21 @@ void wlanPageHandler()
 		// Show access points
 		for (uint8_t ap_idx = 0; ap_idx < ap_count; ap_idx++)
 		{
-			response_message += "<input type=\"radio\" name=\"ssid\" value=\"" + String(WiFi.SSID(ap_idx)) + "\">";
+      if (String(WiFi.SSID(ap_idx))==sta_ssid)
+      {
+        response_message += "<input type=\"radio\" name=\"ssid\" value=\"" + String(WiFi.SSID(ap_idx)) + "\" checked>";
+      }
+      else
+      {
+        response_message += "<input type=\"radio\" name=\"ssid\" value=\"" + String(WiFi.SSID(ap_idx)) + "\">";
+      }
 			response_message += String(WiFi.SSID(ap_idx)) + " (RSSI: " + WiFi.RSSI(ap_idx) + ")";
 			(WiFi.encryptionType(ap_idx) == ENC_TYPE_NONE) ? response_message += " " : response_message += "*";
 			response_message += "<br><br>";
 		}
 
 		response_message += "WiFi password (if required):<br>";
-		response_message += "<input type=\"text\" name=\"password\"><br>";
+    response_message += "<input type=\"text\" value=\""+sta_pass+"\" name=\"password\"><br>";
 		response_message += "<input type=\"submit\" value=\"Connect\">";
 		response_message += "</form>";
 	}
@@ -175,7 +178,7 @@ void gpioPageHandler()
 		ResetScrollPos();
 	}
 
-	String response_message = "<html><head><title>ESP8266 Webserver</title></head>";
+	String response_message = "<html><head><title>MAX7219 LED Matrix</title></head>";
 	response_message += "<body style=\"background-color:PaleGoldenRod\"><h1><center>Control GPIO pins</center></h1>";
 	response_message += "<form method=\"get\">";
 

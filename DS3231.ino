@@ -8,7 +8,7 @@
 #include <Wire.h>
 #include <RtcDS3231.h>
 
-RtcDS3231 Rtc;
+RtcDS3231<TwoWire> Rtc(Wire);
 
 void DS3231_setup()
 {

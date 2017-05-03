@@ -29,8 +29,12 @@ int T_samples, P_samples;
 #include <Time.h>
 #include <TimeLib.h>
 
-char ssid[] = "BST";	//  your network SSID (name)
-char pass[] = "";		// your network password
+// Access point credentials
+String ap_ssid("LED_Matrix");
+const char *ap_password = "12345678";
+
+String sta_ssid("BST");	//  your network SSID (name)
+String sta_pass;		        // your network password
 
 unsigned int localPort = 2390;      // local port to listen for UDP packets
 
@@ -70,6 +74,24 @@ void LoadDisplayBMP280(void);
 void setup() {
 	// put your setup code here, to run once:
 	Serial.begin(115200);
+
+	IPAddress local_IP(192, 168, 25, 1);
+	IPAddress gateway(192, 168, 25, 1);
+	IPAddress subnet(255, 255, 255, 0);
+
+	WiFi.softAPConfig(local_IP, gateway, subnet);
+
+	String macAddr = WiFi.softAPmacAddress();
+	ap_ssid += '_' + macAddr.substring(12, 14) + macAddr.substring(15);
+	WiFi.softAP(ap_ssid.c_str(), ap_password);
+
+	if (WiFi.SSID().length()>0)
+	{
+		sta_ssid = WiFi.SSID();
+		sta_pass = WiFi.psk();
+	}
+
+	delay(1000);
 
 	if (!bme.begin()) 
 	{
