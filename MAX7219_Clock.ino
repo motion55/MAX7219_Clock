@@ -84,14 +84,13 @@ void setup() {
 	String macAddr = WiFi.softAPmacAddress();
 	ap_ssid += '_' + macAddr.substring(12, 14) + macAddr.substring(15);
 	WiFi.softAP(ap_ssid.c_str(), ap_password);
+	WiFi.hostname(ap_ssid);
 
 	if (WiFi.SSID().length()>0)
 	{
 		sta_ssid = WiFi.SSID();
 		sta_pass = WiFi.psk();
 	}
-
-	delay(1000);
 
 	if (!bme.begin()) 
 	{
@@ -108,9 +107,11 @@ void setup() {
 		Use_bmp280 = true;
 	}
 
-	InitMax7219();
-
 	DS3231_setup();
+
+	delay(3000);
+
+	InitMax7219();
 
 	String ConnectStr("Connecting... ");
 
@@ -128,6 +129,7 @@ void setup() {
 		LoadDisplayBuffer(LoadPos);
 		delay(50);
 	}
+
 	InitMax7219();
 
 	ResetScrollPos();
@@ -148,33 +150,46 @@ void setup() {
 	webserver_setup();
 }
 
+int LogoCount = 0;
+
 void loop() {
 	// put your main code here, to run repeatedly:
 	UpdateTime();
-	if (LogoOn())
+	if (LoadDisplayBuffer(LoadPos) == 0)
 	{
-		String Timestr(scrollText);
-		if (LoadDisplayBuffer(LoadPos) == 0)
+		if (LogoOn())
 		{
-			LoadDisplayBMP280();
+			LogoCount++;
+			if (LogoCount > 3)
+			{
+				LogoCount = 0;
+				SetLogo(false);
+				String Timestr(scrollText);
+				LoadDisplayBMP280();
+				Timestr += bmp280_str;
+				LoadMessage(Timestr.c_str());
+			}
+			else
+			{
+				LoadMessage(scrollText);
+			}
 		}
 		else
 		{
-			Temperature += bme.readTemperature();
-			T_samples++;
-			Pressure += bme.readPressure();
-			P_samples++;
+			SetLogo(true);
+			LoadMessage(scrollText);
 		}
-		Timestr += bmp280_str;
-		LoadMessage(Timestr.c_str());
-		my_delay_ms(50);
 	}
 	else
 	{
-		LoadMessage(scrollText);
-		LoadDisplayBuffer(LoadPos);
-		my_delay_ms(50);
+		Temperature += bme.readTemperature();
+		T_samples++;
+		Pressure += bme.readPressure();
+		P_samples++;
+
+		if (LogoOn()) LoadMessage(scrollText);
 	}
+	my_delay_ms(50);
 }
 
 /*///////////////////////////////////////////////////////////////////////////*/

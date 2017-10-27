@@ -151,6 +151,11 @@ inline boolean LogoOn()
 	return bLogo;
 }
 
+inline void SetLogo(boolean OnLogo)
+{
+	bLogo = OnLogo;
+}
+
 int DisplayLogo()
 {
 	return LoadDisplayBuffer(LoadPos);
