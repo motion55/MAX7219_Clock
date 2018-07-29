@@ -807,7 +807,7 @@ void InitMax7219()
 	}
 }
 
-const int ColumnBufferLen = 256;
+const int ColumnBufferLen = 512;
 unsigned char ColumnBuffer[ColumnBufferLen];
 int LoadPos = 0;
 
@@ -846,6 +846,22 @@ char LoadColumnBuffer(char ascii)
 		LoadPos += kern;
 	}
 	return kern;
+}
+
+int ReloadMessage(int Pos, const char *message) 
+{
+	LoadPos = Pos;
+	for (int counter = 0; ; counter++)
+	{
+		// read back a char 
+		unsigned char myChar = message[counter];
+		if (myChar != 0)
+		{
+			LoadColumnBuffer(myChar);
+		}
+		else break;
+	}
+	return LoadPos;
 }
 
 int LoadMessage(const char *message)

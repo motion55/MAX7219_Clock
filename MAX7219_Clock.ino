@@ -15,6 +15,8 @@
 #define BMP_MOSI 13 
 #define BMP_CS 15
 
+#define DEF_BME280_ADDR	0x76
+
 Adafruit_BMP280 bme; // I2C
 //Adafruit_BMP280 bme(BMP_CS); // hardware SPI
 //Adafruit_BMP280 bme(BMP_CS, BMP_MOSI, BMP_MISO,  BMP_SCK);
@@ -92,19 +94,22 @@ void setup() {
 		sta_pass = WiFi.psk();
 	}
 
-	if (!bme.begin()) 
-	{
+	if (bme.begin(DEF_BME280_ADDR)) {
+		Use_bmp280 = true;
+	} else
+	if (bme.begin()) {
+		Use_bmp280 = true;
+	} else {
 		Serial.println("Could not find a valid BMP280 sensor, check wiring!");
 		Use_bmp280 = false;
 	}
-	else
-	{
+
+	if (Use_bmp280)	{
 		Temperature = bme.readTemperature();
 		T_samples = 1;
 		Pressure = bme.readPressure();
 		P_samples = 1;
 		Altitude = bme.readAltitude(SENSORS_PRESSURE_SEALEVELHPA);
-		Use_bmp280 = true;
 	}
 
 	DS3231_setup();
@@ -151,48 +156,58 @@ void setup() {
 }
 
 int LogoCount = 0;
+int BufferEnd = 0;
 
 void loop() {
 	// put your main code here, to run repeatedly:
 	UpdateTime();
-	if (LoadDisplayBuffer(LoadPos) == 0)
-	{
+	if (LoadDisplayBuffer(BufferEnd) == 0) {
 		if (LogoOn())
 		{
 			LogoCount++;
-			if (LogoCount > 3)
-			{
+			if (LogoCount > 5) {
 				LogoCount = 0;
 				SetLogo(false);
 				String Timestr(scrollText);
+				Timestr += GetDateStr();
+				BufferEnd = LoadMessage(Timestr.c_str());
+			} else
+			if (LogoCount == 3) {
+				SetLogo(false);
 				LoadDisplayBMP280();
+				String Timestr(scrollText);
 				Timestr += bmp280_str;
-				LoadMessage(Timestr.c_str());
-			}
-			else
-			{
-				LoadMessage(scrollText);
+				BufferEnd = LoadMessage(Timestr.c_str());
+			} else {
+				BufferEnd = LoadMessage(scrollText);
 			}
 		}
 		else
 		{
 			SetLogo(true);
-			LoadMessage(scrollText);
+			BufferEnd = LoadMessage(scrollText);
 		}
-	}
-	else
-	{
+	} else	{
 		Temperature += bme.readTemperature();
 		T_samples++;
 		Pressure += bme.readPressure();
 		P_samples++;
 
-		if (LogoOn()) LoadMessage(scrollText);
+		ReloadMessage(0, scrollText);
 	}
 	my_delay_ms(50);
 }
 
 /*///////////////////////////////////////////////////////////////////////////*/
+
+String GetDateStr(void)
+{
+	tmElements_t tm;
+	breakTime(now(),tm);
+	String DateStr(monthShortStr(tm.Month));
+	DateStr += " " + String(tm.Day) + " " + dayShortStr(tm.Wday) + " ";
+	return DateStr;
+}
 
 void UpdateTime(void)
 {
