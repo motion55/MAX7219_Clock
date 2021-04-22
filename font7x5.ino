@@ -140,6 +140,49 @@ public:
 
 /*////////////////////////////////////////////////////////////////////////////////*/
 
+const unsigned char sevenseg[] PROGMEM = {
+//	0
+	0b00111110,
+	0b01000001,
+	0b00111110,
+//	1
+	0b00000010,
+	0b01111111,
+	0b00000000,
+//	2
+	0b01110001,
+	0b01001001,
+	0b01000110,
+//	3
+	0b01001001,
+	0b01001001,
+	0b00111110,
+//	4
+	0b00001111,
+	0b00001000,
+	0b01111111,
+//	5
+	0b01000111,
+	0b01001001,
+	0b00110001,
+//	6
+	0b00111110,
+	0b01001001,
+	0b00110001,
+//	7
+	0b00000001,
+	0b01110001,
+	0b00001111,
+//	8
+	0b00110110,
+	0b01001001,
+	0b00110110,
+//	9
+	0b01000110,
+	0b01001001,
+	0b00111110,
+};
+
 const unsigned char font7x5[] PROGMEM = {
 	//   offset = 0
 	0b00000000,
@@ -848,6 +891,33 @@ char LoadColumnBuffer(char ascii)
 	return kern;
 }
 
+#define NumWidth 3
+
+char LoadColumnBufferNum(char Num)
+{
+  if ((Num>='0')&&(Num<='9')) 
+  {
+    int offset = NumWidth * (Num-'0');
+    char kern = NumWidth;
+        
+#if defined(ESP8266)
+    if ((LoadPos + NumWidth) > ColumnBufferLen) kern = ColumnBufferLen - LoadPos;
+    memcpy_P(&ColumnBuffer[LoadPos], sevenseg + offset, kern);
+#else
+    for (int i = 0; i < kern; i++)
+    {
+      if (LoadPos >= ColumnBufferLen) return i;
+      ColumnBuffer[LoadPos++] = pgm_read_byte_near(sevenseg + offset);
+      offset++;
+    }
+#endif
+    LoadPos += kern;
+    return kern;  
+  }
+  return 0;
+}
+
+
 int ReloadMessage(int Pos, const char *message) 
 {
 	LoadPos = Pos;
@@ -919,4 +989,3 @@ int LoadDisplayBuffer(int BufferLen)
 
 	return ScrollPos;
 }
-
